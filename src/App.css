@@ -15,7 +15,7 @@
 
 .App-header {
   background-color: #282c34;
-  min-height: 100vh;
+  min-height: 10vh;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -24,15 +24,66 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+
+.App-header2 {
+  background-color: #282c34;
+  min-height: 30.1vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+
+.App-body {
+  background-color: #476aaf;
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: repeat(50, 1fr); /* 100 equally sized columns */
+  grid-template-rows: repeat(25, 1fr); /* 50 equally sized rows */
+  background-color: rgb(255, 255, 255);
+  padding: 10px;
+  min-width: 90vh;
+  min-height: 50vh;
+  max-height: 50vh;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.bar{
+
+  background-color: red;
+  width: 14px;
+  height: 15px;
+
+}
+
+.grid-container {
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  user-select: none; /* Prevents accidental text selection */
+}
+
+.cell {
+  background-color: lightgray;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.cell.selected {
+  background-color: blue;
 }
