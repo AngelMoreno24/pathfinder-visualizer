@@ -70,6 +70,8 @@
 
 }
 
+
+
 .grid-container {
   display: grid;
   justify-content: center;
@@ -86,4 +88,12 @@
 
 .cell.selected {
   background-color: blue;
+}
+
+.cell.start {
+  background-color: green;
+}
+
+.cell.end {
+  background-color: red;
 }

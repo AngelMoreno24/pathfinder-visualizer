@@ -8,6 +8,9 @@ function App() {
   const [cellSize, setCellSize] = useState(20);
   const [gridData, setGridData] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [draggingType, setDraggingType] = useState(null); // "start", "end", or null
+  const [startCell, setStartCell] = useState({ row: 5, col: 5 });
+  const [endCell, setEndCell] = useState({ row: 25, col: 45 });
 
   // Function to adjust cell size dynamically
   const updateCellSize = () => {
@@ -16,18 +19,7 @@ function App() {
     setCellSize(Math.min(maxWidth, maxHeight));
   };
 
-  // Function to create grid
-  const createGrid = () => {
-    return Array.from({ length: rows }, (_, row) =>
-      Array.from({ length: cols }, (_, col) => ({
-        row,
-        col,
-        status: "default",
-      }))
-    );
-  };
-
-  // Initialize grid state (persistent on resize)
+  // Initialize grid state once (persistent walls, no reset)
   useEffect(() => {
     updateCellSize();
     setGridData(createGrid());
@@ -35,12 +27,54 @@ function App() {
     return () => window.removeEventListener("resize", updateCellSize);
   }, []);
 
-  // Function to toggle a cell
-  const toggleCell = (row, col) => {
+  // Function to create an initial grid (without clearing selected walls)
+  const createGrid = () => {
+    return Array.from({ length: rows }, (_, row) =>
+      Array.from({ length: cols }, (_, col) => ({
+        row,
+        col,
+        status:
+          row === startCell.row && col === startCell.col
+            ? "start"
+            : row === endCell.row && col === endCell.col
+            ? "end"
+            : "default",
+      }))
+    );
+  };
+
+  // Function to update the grid when moving the start/end cells without clearing walls
+  const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
-      prevGrid.map((r, rIndex) =>
-        r.map((cell, cIndex) =>
-          rIndex === row && cIndex === col
+      prevGrid.map((row) =>
+        row.map((cell) => {
+          if (cell.row === newStart.row && cell.col === newStart.col) {
+            return { ...cell, status: "start" };
+          } else if (cell.row === newEnd.row && cell.col === newEnd.col) {
+            return { ...cell, status: "end" };
+          } else if (
+            (cell.row === startCell.row && cell.col === startCell.col) ||
+            (cell.row === endCell.row && cell.col === endCell.col)
+          ) {
+            return { ...cell, status: "default" }; // Clear old start/end position
+          }
+          return cell;
+        })
+      )
+    );
+  };
+
+  // Handle cell selection (walls)
+  const toggleCell = (row, col) => {
+    if ((row === startCell.row && col === startCell.col) || 
+        (row === endCell.row && col === endCell.col)) {
+      return; // Prevent selecting start or end cells as walls
+    }
+
+    setGridData((prevGrid) =>
+      prevGrid.map((r) =>
+        r.map((cell) =>
+          cell.row === row && cell.col === col
             ? { ...cell, status: cell.status === "selected" ? "default" : "selected" }
             : cell
         )
@@ -50,18 +84,31 @@ function App() {
 
   // Mouse event handlers
   const handleMouseDown = (row, col) => {
-    setIsDragging(true);
-    toggleCell(row, col);
+    if (row === startCell.row && col === startCell.col) {
+      setDraggingType("start");
+    } else if (row === endCell.row && col === endCell.col) {
+      setDraggingType("end");
+    } else {
+      setIsDragging(true);
+      toggleCell(row, col);
+    }
   };
 
   const handleMouseEnter = (row, col) => {
-    if (isDragging) {
+    if (draggingType === "start") {
+      setStartCell({ row, col });
+      updateGrid({ row, col }, endCell);
+    } else if (draggingType === "end") {
+      setEndCell({ row, col });
+      updateGrid(startCell, { row, col });
+    } else if (isDragging) {
       toggleCell(row, col);
     }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setDraggingType(null);
   };
 
   return (
@@ -82,7 +129,7 @@ function App() {
             row.map((cell) => (
               <div
                 key={`${cell.row}-${cell.col}`}
-                className={`cell ${cell.status === "selected" ? "selected" : ""}`}
+                className={`cell ${cell.status}`}
                 onMouseDown={() => handleMouseDown(cell.row, cell.col)}
                 onMouseEnter={() => handleMouseEnter(cell.row, cell.col)}
                 style={{ width: `${cellSize}px`, height: `${cellSize}px` }}
