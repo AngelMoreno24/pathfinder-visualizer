@@ -4,7 +4,7 @@ import "./App.css";
 function App() {
   const rows = 30;
   const cols = 50;
-  
+
   const [cellSize, setCellSize] = useState(20);
   const [gridData, setGridData] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -39,9 +39,13 @@ function App() {
             : row === endCell.row && col === endCell.col
             ? "end"
             : "default",
+        distance: Infinity,
+        isVisited: false,
+        previouseNode: null
       }))
     );
-  };
+  }; 
+ 
 
   // Function to update the grid when moving the start/end cells without clearing walls
   const updateGrid = (newStart, newEnd) => {
@@ -139,8 +143,7 @@ function App() {
         </div>
       </main>
 
-      <footer className="App-header2">
-        <h1>PathFinder</h1>
+      <footer className="App-header2"> 
       </footer>
     </div>
   );
