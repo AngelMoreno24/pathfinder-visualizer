@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import { dijkstra } from "./components/grid";
 
 function App() {
   const rows = 30;
@@ -28,7 +29,7 @@ function App() {
   }, []);
 
   // Function to create an initial grid (without clearing selected walls)
-  const createGrid = () => {
+ const createGrid = () => {
     return Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => ({
         row,
@@ -115,6 +116,59 @@ function App() {
     setDraggingType(null);
   };
 
+
+
+
+
+
+  const runDijkstra = () => {
+    setGridData((prevGrid) => {
+      const newGrid = prevGrid.map((row) =>
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          status: cell.status === "selected" ? "selected" : 
+                  cell.row === startCell.row && cell.col === startCell.col ? "start" : 
+                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
+        }))
+      );
+  
+      // Run Dijkstra with the updated grid
+      const startNode = newGrid[startCell.row][startCell.col];
+      const endNode = newGrid[endCell.row][endCell.col];
+      const shortestPath = dijkstra(newGrid, startNode, endNode);
+  
+      // Update the shortest path visually
+      for (let cell of shortestPath) {
+        if (cell.status !== "start" && cell.status !== "end") {
+          newGrid[cell.row][cell.col].status = "path";
+        }
+      }
+  
+      return newGrid; // Update state with new grid
+    });
+  };
+
+
+  const clearBoard = () => {
+    setGridData((prevGrid) =>
+      prevGrid.map((row) =>
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          status: 
+            (cell.row === startCell.row && cell.col === startCell.col) ? "start" : 
+            (cell.row === endCell.row && cell.col === endCell.col) ? "end" : 
+            "default",
+        }))
+      )
+    );
+  };
+
   return (
     <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
@@ -144,6 +198,8 @@ function App() {
       </main>
 
       <footer className="App-header2"> 
+        <button onClick={runDijkstra}>Run Dijkstra</button>
+        <button onClick={clearBoard}>Clear Board</button>
       </footer>
     </div>
   );
