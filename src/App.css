@@ -101,12 +101,12 @@
 
 .cell.checked {
   background-color: rgb(249, 255, 62);
-  transition: background-color 0.15s ease;
+  transition: background-color 0.3s ease;
 }
 
 .cell.visited {
   background-color: rgb(4, 174, 231);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease;
 }
 
 .cell.path {

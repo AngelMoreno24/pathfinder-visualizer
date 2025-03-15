@@ -12,6 +12,7 @@ function App() {
   const [draggingType, setDraggingType] = useState(null); // "start", "end", or null
   const [startCell, setStartCell] = useState({ row: 5, col: 5 });
   const [endCell, setEndCell] = useState({ row: 25, col: 45 });
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState("dijkstra"); // Default algorithm
 
   // Function to adjust cell size dynamically
   const updateCellSize = () => {
@@ -178,9 +179,9 @@ function App() {
                 if (i === visitedNodes.length - 1) {
                     animateShortestPath(shortestPath);
                 }
-            }, 50); // Delay before switching to blue
+            }, 5); // Delay before switching to blue
 
-        }, 100 * i); // Delay each node animation
+        }, 10 * i); // Delay each node animation
     }
 };
 
@@ -196,12 +197,12 @@ function App() {
                 prevGrid.map((row) =>
                     row.map((cell) =>
                         cell.row === shortestPath[i].row && cell.col === shortestPath[i].col
-                            ? { ...cell, status: "path" }
+                            ? { ...cell, status: "path"}
                             : cell
                     )
                 )
             );
-        }, 50 * i); // Slow animation for visibility
+        }, 25 * i); // Slow animation for visibility
     }
 };
 
@@ -226,10 +227,32 @@ function App() {
     );
   };
 
+  const handleAlgorithmChange = (event) => {
+    setSelectedAlgorithm(event.target.value);
+  };
+
+
+  const startPathfinding = () => {
+    console.log(selectedAlgorithm)
+    if (selectedAlgorithm === "dijkstra") {
+      runDijkstra();
+    } else {
+      alert("Algorithm not implemented yet!");
+    }
+  };
+
   return (
     <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
         <h1>PathFinder</h1>
+        <button onClick={startPathfinding}>Run</button>
+        <button onClick={clearBoard}>Clear Board</button>
+        <select value={selectedAlgorithm}  onChange={handleAlgorithmChange}>
+          <option value="dijkstra">Dijkstra</option>
+          <option value="A*">A*</option>
+          <option value="mercedes">Mercedes</option>
+          <option value="audi">Audi</option>
+        </select>
       </header>
 
       <main className="App-body">
@@ -255,8 +278,6 @@ function App() {
       </main>
 
       <footer className="App-header2"> 
-        <button onClick={runDijkstra}>Run Dijkstra</button>
-        <button onClick={clearBoard}>Clear Board</button>
       </footer>
     </div>
   );

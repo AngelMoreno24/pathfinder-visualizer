@@ -55,10 +55,10 @@ export const dijkstra = (grid, startNode, finishNode) => {
 const checkNeighbors = (grid, currentNode, priorityQueue) => {
     let { row, col } = currentNode;
     const movementDirections = [
-        [-1, 0],  // Up
+        [0, 1],    // Right
         [1, 0],   // Down
         [0, -1],  // Left
-        [0, 1]    // Right
+        [-1, 0]  // Up
     ];
 
     let neighborsChecked = []; // Track nodes that have been checked
