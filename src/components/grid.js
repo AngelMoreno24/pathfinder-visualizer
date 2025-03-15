@@ -1,10 +1,5 @@
 
   // Function to clear board
-
-  const clearBoard = () => { 
-
-    console.log('asd')
-  };
  
 
   class PriorityQueue {
@@ -26,50 +21,71 @@
     }
 }
 
+
+
 export const dijkstra = (grid, startNode, finishNode) => {
     startNode.distance = 0;
     let pq = new PriorityQueue();
     pq.enqueue(startNode, 0);
 
+    let checkedNodesInOrder = []; // Track nodes when first encountered
+    let visitedNodesInOrder = []; // Track nodes when officially visited
+
     while (!pq.isEmpty()) {
         let { node: currentNode } = pq.dequeue();
 
-        // If we reached the finish node, stop early
         if (currentNode === finishNode) break;
-        
-        if (currentNode.isVisited) continue; // Skip if already visited
-        
+
+        if (currentNode.isVisited) continue;
+
         currentNode.isVisited = true;
-        
-        checkNeighbors(grid, currentNode, pq);
+        visitedNodesInOrder.push(currentNode); // Mark as officially visited
+
+        checkedNodesInOrder.push(...checkNeighbors(grid, currentNode, pq)); // Push checked neighbors
     }
 
-    return getShortestPath(finishNode);
+    const shortestPath = getShortestPath(finishNode);
+    return { checkedNodesInOrder, visitedNodesInOrder, shortestPath };
 };
 
-const checkNeighbors = (grid, currNode, pq) => {
-    let { row, col } = currNode;
-    const directions = [
-        [-1, 0], [1, 0], [0, -1], [0, 1] // Up, Down, Left, Right
+
+
+
+
+const checkNeighbors = (grid, currentNode, priorityQueue) => {
+    let { row, col } = currentNode;
+    const movementDirections = [
+        [-1, 0],  // Up
+        [1, 0],   // Down
+        [0, -1],  // Left
+        [0, 1]    // Right
     ];
 
-    for (let [dr, dc] of directions) {
-        let nr = row + dr, nc = col + dc;
+    let neighborsChecked = []; // Track nodes that have been checked
 
-        if (nr >= 0 && nr < grid.length && nc >= 0 && nc < grid[0].length) {
-            let neighbor = grid[nr][nc];
+    for (let [rowOffset, colOffset] of movementDirections) {
+        let neighborRow = row + rowOffset;
+        let neighborCol = col + colOffset;
 
-            if (!neighbor.isVisited && neighbor.status !== "selected") {
-                let newDistance = currNode.distance + 1; // Assuming uniform weight
+        if (neighborRow >= 0 && neighborRow < grid.length && 
+            neighborCol >= 0 && neighborCol < grid[0].length) {
+            
+            let neighborNode = grid[neighborRow][neighborCol];
 
-                if (newDistance < neighbor.distance) {
-                    neighbor.distance = newDistance;
-                    neighbor.previousNode = currNode;
-                    pq.enqueue(neighbor, newDistance);
+            if (!neighborNode.isVisited && neighborNode.status !== "selected") {
+                let newDistance = currentNode.distance + 1;
+
+                if (newDistance < neighborNode.distance) {
+                    neighborNode.distance = newDistance;
+                    neighborNode.previousNode = currentNode;
+                    priorityQueue.enqueue(neighborNode, newDistance);
+                    neighborsChecked.push(neighborNode); // Track checked nodes
                 }
             }
         }
     }
+
+    return neighborsChecked;
 };
 
 const getShortestPath = (finishNode) => {

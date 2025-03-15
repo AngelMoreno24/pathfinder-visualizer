@@ -85,10 +85,7 @@
   cursor: pointer;
   box-sizing: border-box;
 }
-
-.cell.path {
-  background-color: yellow;  /* Path color */
-}
+ 
 
 .cell.selected {
   background-color: blue;   /* Wall color */
@@ -101,6 +98,18 @@
 .cell.end {
   background-color: red;    /* End cell color */
 }
-.cell.searching {
-  background-color: rgb(0, 255, 72);    /* End cell color */
+
+.cell.checked {
+  background-color: rgb(249, 255, 62);
+  transition: background-color 0.15s ease;
+}
+
+.cell.visited {
+  background-color: rgb(4, 174, 231);
+  transition: background-color 0.2s ease;
+}
+
+.cell.path {
+  background-color: yellow;
+  transition: background-color 0.3s ease;
 }

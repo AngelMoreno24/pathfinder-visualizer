@@ -120,7 +120,6 @@ function App() {
 
 
 
-
   const runDijkstra = () => {
     setGridData((prevGrid) => {
       const newGrid = prevGrid.map((row) =>
@@ -129,27 +128,85 @@ function App() {
           distance: Infinity,
           isVisited: false,
           previousNode: null,
-          status: cell.status === "selected" ? "selected" : 
-                  cell.row === startCell.row && cell.col === startCell.col ? "start" : 
+          status: cell.status === "selected" ? "selected" :
+                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
                   cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
         }))
       );
   
-      // Run Dijkstra with the updated grid
       const startNode = newGrid[startCell.row][startCell.col];
       const endNode = newGrid[endCell.row][endCell.col];
-      const shortestPath = dijkstra(newGrid, startNode, endNode);
-  
-      // Update the shortest path visually
-      for (let cell of shortestPath) {
-        if (cell.status !== "start" && cell.status !== "end") {
-          newGrid[cell.row][cell.col].status = "path";
-        }
-      }
-  
-      return newGrid; // Update state with new grid
+      
+      // Run Dijkstra
+      const { visitedNodesInOrder, shortestPath } = dijkstra(newGrid, startNode, endNode);
+
+      // Animate checked nodes first, then visited nodes
+      animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+      
+      return newGrid;
     });
   };
+
+
+  const animateSearch = (visitedNodes, shortestPath) => {
+    for (let i = 0; i < visitedNodes.length; i++) {
+        setTimeout(() => {
+            // Set the current node to orange (checked)
+            setGridData((prevGrid) =>
+                prevGrid.map((row) =>
+                    row.map((cell) =>
+                        cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col
+                            ? { ...cell, status: "checked" } // First, mark as checked (orange)
+                            : cell
+                    )
+                )
+            );
+
+            // After a delay, switch it to visited (blue)
+            setTimeout(() => {
+                setGridData((prevGrid) =>
+                    prevGrid.map((row) =>
+                        row.map((cell) =>
+                            cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col
+                                ? { ...cell, status: "visited" } // Change to visited (blue)
+                                : cell
+                        )
+                    )
+                );
+
+                // If it's the last visited node, animate the shortest path
+                if (i === visitedNodes.length - 1) {
+                    animateShortestPath(shortestPath);
+                }
+            }, 50); // Delay before switching to blue
+
+        }, 100 * i); // Delay each node animation
+    }
+};
+
+
+
+
+
+
+  const animateShortestPath = (shortestPath) => {
+    for (let i = 0; i < shortestPath.length; i++) {
+        setTimeout(() => {
+            setGridData((prevGrid) =>
+                prevGrid.map((row) =>
+                    row.map((cell) =>
+                        cell.row === shortestPath[i].row && cell.col === shortestPath[i].col
+                            ? { ...cell, status: "path" }
+                            : cell
+                    )
+                )
+            );
+        }, 50 * i); // Slow animation for visibility
+    }
+};
+
+
+
 
 
   const clearBoard = () => {
