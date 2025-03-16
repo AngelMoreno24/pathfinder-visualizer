@@ -12,16 +12,22 @@ function App() {
   const [gridData, setGridData] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [draggingType, setDraggingType] = useState(null); // "start", "end", or null
-  const [startCell, setStartCell] = useState({ row: 5, col: 5 });
-  const [endCell, setEndCell] = useState({ row: 25, col: 45 });
+  const [startCell, setStartCell] = useState({ row: 12, col: 15 });
+  const [endCell, setEndCell] = useState({ row: 12, col: 35 });
   const [selectedAlgorithm, setSelectedAlgorithm] = useState("dijkstra"); // Default algorithm
+
+  const [isRunning, setIsRunning] = useState(false);
+
+
 
   // Function to adjust cell size dynamically
   const updateCellSize = () => {
-    const maxWidth = window.innerWidth / cols;
-    const maxHeight = window.innerHeight / rows;
-    setCellSize(Math.min(maxWidth, maxHeight));
+    const maxWidth = Math.min(window.innerWidth * 0.9, 1200) / cols; // Limit width
+    const maxHeight = Math.min(window.innerHeight * 0.8, 800) / rows; // Limit height
+    setCellSize(Math.max(15, Math.min(maxWidth, maxHeight))); // Keep size reasonable
   };
+
+
 
   // Initialize grid state once (persistent walls, no reset)
   useEffect(() => {
@@ -179,6 +185,11 @@ function App() {
 
 
   const runAlgorithm = () => {
+    if (isRunning) return; // Prevent multiple clicks while running
+
+    setIsRunning(true); // Disable buttons
+
+    
     setGridData((prevGrid) => {
       const newGrid = prevGrid.map((row) =>
         row.map((cell) => ({
@@ -273,6 +284,9 @@ function App() {
                     )
                 )
             );
+            if (i === shortestPath.length - 1) {
+              setIsRunning(false); // 🔹 Re-enable buttons after animation
+            }
         }, 25 * i); // Slow animation for visibility
     }
 };
@@ -309,20 +323,21 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
         <h1>PathFinder</h1>
-
-        {/* Dropdown and Buttons Container */}
+        
         <div className="controls-container">
-          <select value={selectedAlgorithm} onChange={handleAlgorithmChange} className="dropdown">
+          <select value={selectedAlgorithm} onChange={handleAlgorithmChange} className="dropdown" disabled={isRunning}>
             <option value="dijkstra">Dijkstra</option>
             <option value="A*">A*</option>
             <option value="greedy">Greedy BFS</option>
           </select>
 
-          <button onClick={runAlgorithm} className="action-button">Run</button>
-          <button onClick={() => setGridData(createGrid())} className="action-button clear">Clear Board</button>
+          <button onClick={runAlgorithm} className="action-button" disabled={isRunning}>
+            {isRunning ? "Running..." : "Run"}
+          </button>
+          <button onClick={() => setGridData(createGrid())} className="action-button clear" disabled={isRunning}>Clear Board</button>
         </div>
       </header>
 
@@ -330,8 +345,11 @@ function App() {
         <div
           className="grid-container"
           style={{
-            gridTemplateColumns: `repeat(${cols}, ${cellSize}px)`,
-            gridTemplateRows: `repeat(${rows}, ${cellSize}px)`,
+            gridTemplateColumns: `repeat(${cols}, minmax(15px, ${cellSize}px))`,
+            gridTemplateRows: `repeat(${rows}, minmax(15px, ${cellSize}px))`,
+            maxWidth: "90vw",
+            maxHeight: "80vh",
+            overflow: "auto",
           }}
         >
           {gridData.map((row) =>
@@ -339,12 +357,17 @@ function App() {
               <div
                 key={`${cell.row}-${cell.col}`}
                 className={`cell ${cell.status}`}
-                style={{ width: `${cellSize}px`, height: `${cellSize}px}` }}
+                onMouseDown={() => handleMouseDown(cell.row, cell.col)}
+                onMouseEnter={() => handleMouseEnter(cell.row, cell.col)}
+                style={{ width: `${cellSize}px`, height: `${cellSize}px` }}
               ></div>
             ))
           )}
         </div>
       </main>
+
+      <footer className="App-header2"> 
+      </footer>
     </div>
   );
 }

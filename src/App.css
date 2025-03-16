@@ -40,7 +40,7 @@
 
 .App-body {
   background-color: #476aaf;
-  min-height: 50vh;
+  min-height: 50vh; 
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,12 +71,14 @@
 }
 
 
-
 .grid-container {
   display: grid;
-  justify-content: center;
-  align-items: center;
-  user-select: none; /* Prevents accidental text selection */
+  overflow: auto; /* Allow scrolling if needed */
+  max-width: 90vw; /* Prevent exceeding viewport width */
+  max-height: 80vh; /* Prevent exceeding viewport height */
+  min-width: 400px; /* Ensure a reasonable minimum size */
+  min-height: 200px;
+  border: 2px solid black; /* Optional for visualization */
 }
 
 .cell {
@@ -130,6 +132,7 @@
   display: flex;
   gap: 10px;
   margin-top: 10px;
+  margin-bottom: 15px;
 }
 
 .dropdown {
