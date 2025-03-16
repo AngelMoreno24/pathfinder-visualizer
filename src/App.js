@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { dijkstra } from "./components/grid";
 import { greedyBestFirstSearch } from "./components/greedy";
+import { aStarSearch } from "./components/A-star";
 
 function App() {
   const rows = 30;
@@ -177,6 +178,48 @@ function App() {
   };
 
 
+  const runAlgorithm = () => {
+    setGridData((prevGrid) => {
+      const newGrid = prevGrid.map((row) =>
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          status: cell.status === "selected" ? "selected" :
+                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
+                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
+        }))
+      );
+  
+      const startNode = newGrid[startCell.row][startCell.col];
+      const endNode = newGrid[endCell.row][endCell.col];
+      
+      // Run Dijkstra
+      if(selectedAlgorithm == "dijkstra"){
+        const { visitedNodesInOrder, shortestPath } = dijkstra(newGrid, startNode, endNode);
+
+        // Animate checked nodes first, then visited nodes
+        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+        
+        return newGrid;
+      }else if(selectedAlgorithm == "greedy"){      
+        const { visitedNodesInOrder, shortestPath } = greedyBestFirstSearch(newGrid, startNode, endNode);
+
+        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+        
+        return newGrid;
+
+      }else if(selectedAlgorithm == "A*"){
+        const { visitedNodesInOrder, shortestPath } = aStarSearch(newGrid, startNode, endNode);
+
+        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+        
+        return newGrid;
+      }
+
+    });
+  };
   const animateSearch = (visitedNodes, shortestPath) => {
     for (let i = 0; i < visitedNodes.length; i++) {
         setTimeout(() => {
@@ -262,28 +305,25 @@ function App() {
 
   const startPathfinding = () => {
     console.log(selectedAlgorithm)
-    if (selectedAlgorithm === "dijkstra") {
-      runDijkstra();
-    }else if (selectedAlgorithm === "greedy"){
-
-      runGreedy();
-    } else {
-      alert("Algorithm not implemented yet!");
-    }
+    runAlgorithm();
   };
 
   return (
-    <div className="App" onMouseUp={handleMouseUp}>
+    <div className="App">
       <header className="App-header">
         <h1>PathFinder</h1>
-        <button onClick={startPathfinding}>Run</button>
-        <button onClick={clearBoard}>Clear Board</button>
-        <select value={selectedAlgorithm}  onChange={handleAlgorithmChange}>
-          <option value="dijkstra">Dijkstra</option>
-          <option value="A*">A*</option>
-          <option value="greedy">Greedy</option>
-          <option value="audi">Audi</option>
-        </select>
+
+        {/* Dropdown and Buttons Container */}
+        <div className="controls-container">
+          <select value={selectedAlgorithm} onChange={handleAlgorithmChange} className="dropdown">
+            <option value="dijkstra">Dijkstra</option>
+            <option value="A*">A*</option>
+            <option value="greedy">Greedy BFS</option>
+          </select>
+
+          <button onClick={runAlgorithm} className="action-button">Run</button>
+          <button onClick={() => setGridData(createGrid())} className="action-button clear">Clear Board</button>
+        </div>
       </header>
 
       <main className="App-body">
@@ -299,17 +339,12 @@ function App() {
               <div
                 key={`${cell.row}-${cell.col}`}
                 className={`cell ${cell.status}`}
-                onMouseDown={() => handleMouseDown(cell.row, cell.col)}
-                onMouseEnter={() => handleMouseEnter(cell.row, cell.col)}
-                style={{ width: `${cellSize}px`, height: `${cellSize}px` }}
+                style={{ width: `${cellSize}px`, height: `${cellSize}px}` }}
               ></div>
             ))
           )}
         </div>
       </main>
-
-      <footer className="App-header2"> 
-      </footer>
     </div>
   );
 }
