@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { dijkstra } from "./components/grid";
+import { greedyBestFirstSearch } from "./components/greedy";
 
 function App() {
   const rows = 30;
@@ -148,6 +149,33 @@ function App() {
     });
   };
 
+  const runGreedy = () => {
+    setGridData((prevGrid) => {
+      const newGrid = prevGrid.map((row) =>
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          status: cell.status === "selected" ? "selected" :
+                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
+                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
+        }))
+      );
+  
+      const startNode = newGrid[startCell.row][startCell.col];
+      const endNode = newGrid[endCell.row][endCell.col];
+      
+      // Run Dijkstra
+      const { visitedNodesInOrder, shortestPath } = greedyBestFirstSearch(newGrid, startNode, endNode);
+
+      // Animate checked nodes first, then visited nodes
+      animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+      
+      return newGrid;
+    });
+  };
+
 
   const animateSearch = (visitedNodes, shortestPath) => {
     for (let i = 0; i < visitedNodes.length; i++) {
@@ -236,6 +264,9 @@ function App() {
     console.log(selectedAlgorithm)
     if (selectedAlgorithm === "dijkstra") {
       runDijkstra();
+    }else if (selectedAlgorithm === "greedy"){
+
+      runGreedy();
     } else {
       alert("Algorithm not implemented yet!");
     }
@@ -250,7 +281,7 @@ function App() {
         <select value={selectedAlgorithm}  onChange={handleAlgorithmChange}>
           <option value="dijkstra">Dijkstra</option>
           <option value="A*">A*</option>
-          <option value="mercedes">Mercedes</option>
+          <option value="greedy">Greedy</option>
           <option value="audi">Audi</option>
         </select>
       </header>
