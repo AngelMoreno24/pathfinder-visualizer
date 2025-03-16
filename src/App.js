@@ -61,19 +61,17 @@ function App() {
   const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
       prevGrid.map((row) =>
-        row.map((cell) => {
-          if (cell.row === newStart.row && cell.col === newStart.col) {
-            return { ...cell, status: "start" };
-          } else if (cell.row === newEnd.row && cell.col === newEnd.col) {
-            return { ...cell, status: "end" };
-          } else if (
-            (cell.row === startCell.row && cell.col === startCell.col) ||
-            (cell.row === endCell.row && cell.col === endCell.col)
-          ) {
-            return { ...cell, status: "default" }; // Clear old start/end position
-          }
-          return cell;
-        })
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          g: Infinity,  // Reset g-values
+          f: Infinity,  // Reset f-values
+          status: cell.status === "selected" ? "selected" :
+                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
+                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
+        }))
       )
     );
   };

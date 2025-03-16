@@ -5,7 +5,7 @@ class PriorityQueue {
 
     enqueue(node, priority) {
         this.values.push({ node, priority });
-        this.values.sort((a, b) => a.priority - b.priority); // Min-Heap (Should be replaced with an actual binary heap for efficiency)
+        this.values.sort((a, b) => a.priority - b.priority); // Min-Heap (Replace with a binary heap for efficiency)
     }
 
     dequeue() {
@@ -17,19 +17,31 @@ class PriorityQueue {
     }
 }
 
+// Manhattan Distance Heuristic (Used in A*)
 const heuristic = (node, goal) => {
-    return Math.abs(node.row - goal.row) + Math.abs(node.col - goal.col); // Manhattan Distance
+    return Math.abs(node.row - goal.row) + Math.abs(node.col - goal.col);
 };
 
+// **FIXED A* Search Algorithm**
 export const aStarSearch = (grid, startNode, finishNode) => {
+    // Reset grid state before running A*
+    grid.forEach(row => {
+        row.forEach(cell => {
+            cell.g = Infinity;
+            cell.f = Infinity;
+            cell.previousNode = null;
+            cell.isVisited = false;
+        });
+    });
+
     startNode.g = 0; // Cost from start to start is 0
     startNode.f = heuristic(startNode, finishNode); // Initial f-score
 
     let pq = new PriorityQueue();
     pq.enqueue(startNode, startNode.f);
 
-    let visitedNodesInOrder = new Set();
-    let processedNodes = new Set(); // Track nodes that have been fully processed
+    let visitedNodesInOrder = [];
+    let processedNodes = new Set(); // Track fully processed nodes
 
     while (!pq.isEmpty()) {
         let { node: currentNode } = pq.dequeue();
@@ -37,22 +49,24 @@ export const aStarSearch = (grid, startNode, finishNode) => {
         if (processedNodes.has(currentNode)) continue; // Avoid redundant processing
         processedNodes.add(currentNode);
 
-        // If we reached the goal, reconstruct the path
+        // **FIXED**: Compare by row/col instead of object reference
         if (currentNode.row === finishNode.row && currentNode.col === finishNode.col) {
             return {
-                visitedNodesInOrder: Array.from(visitedNodesInOrder),
+                visitedNodesInOrder,
                 shortestPath: getShortestPath(finishNode)
             };
         }
 
-        visitedNodesInOrder.add(currentNode);
+        visitedNodesInOrder.push(currentNode);
+        currentNode.isVisited = true;
+
         checkNeighbors(grid, currentNode, finishNode, pq, processedNodes);
     }
 
-    return { visitedNodesInOrder: Array.from(visitedNodesInOrder), shortestPath: [] }; // No path found
+    return { visitedNodesInOrder, shortestPath: [] }; // No path found
 };
 
-// Explore neighbors with A* cost calculations
+// **Explore neighbors with A* cost calculations**
 const checkNeighbors = (grid, currentNode, finishNode, priorityQueue, processedNodes) => {
     let { row, col } = currentNode;
     const movementDirections = [
@@ -74,7 +88,7 @@ const checkNeighbors = (grid, currentNode, finishNode, priorityQueue, processedN
             if (!processedNodes.has(neighborNode) && neighborNode.status !== "selected") {
                 let newG = currentNode.g + 1; // Cost from start to neighbor
 
-                if (newG < (neighborNode.g || Infinity)) {
+                if (newG < neighborNode.g) {
                     neighborNode.g = newG;
                     neighborNode.f = newG + heuristic(neighborNode, finishNode);
                     neighborNode.previousNode = currentNode;
@@ -85,7 +99,7 @@ const checkNeighbors = (grid, currentNode, finishNode, priorityQueue, processedN
     }
 };
 
-// Reconstruct shortest path
+// **Reconstruct shortest path**
 const getShortestPath = (finishNode) => {
     let path = [];
     let current = finishNode;
