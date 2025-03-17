@@ -3,7 +3,7 @@ import "./App.css";
 import { dijkstra } from "./components/grid";
 import { greedyBestFirstSearch } from "./components/greedy";
 import { aStarSearch } from "./components/A-star";
-
+import { depthFirstSearch } from "./components/dfs";
 function App() {
   const rows = 30;
   const cols = 50;
@@ -57,25 +57,23 @@ function App() {
   }; 
  
 
-  // Function to update the grid when moving the start/end cells without clearing walls
   const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
-      prevGrid.map((row) =>
-        row.map((cell) => ({
-          ...cell,
-          distance: Infinity,
-          isVisited: false,
-          previousNode: null,
-          g: Infinity,  // Reset g-values
-          f: Infinity,  // Reset f-values
-          status: cell.status === "selected" ? "selected" :
-                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
-                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
-        }))
-      )
+        prevGrid.map((row) =>
+            row.map((cell) => ({
+                ...cell,
+                distance: Infinity,
+                isVisited: false,
+                previousNode: null,
+                g: Infinity,
+                f: Infinity,
+                status: cell.status === "selected" ? "selected" :
+                        cell.row === newStart.row && cell.col === newStart.col ? "start" :
+                        cell.row === newEnd.row && cell.col === newEnd.col ? "end" : "default",
+            }))
+        )
     );
-  };
-
+};
   // Handle cell selection (walls)
   const toggleCell = (row, col) => {
     if ((row === startCell.row && col === startCell.col) || 
@@ -108,15 +106,21 @@ function App() {
 
   const handleMouseEnter = (row, col) => {
     if (draggingType === "start") {
-      setStartCell({ row, col });
-      updateGrid({ row, col }, endCell);
+        setStartCell((prevStart) => {
+            const newStart = { row, col };
+            updateGrid(newStart, endCell);  // Ensure latest endCell
+            return newStart;
+        });
     } else if (draggingType === "end") {
-      setEndCell({ row, col });
-      updateGrid(startCell, { row, col });
+        setEndCell((prevEnd) => {
+            const newEnd = { row, col };
+            updateGrid(startCell, newEnd);  // Ensure latest startCell
+            return newEnd;
+        });
     } else if (isDragging) {
-      toggleCell(row, col);
+        toggleCell(row, col);
     }
-  };
+};
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -225,13 +229,27 @@ function App() {
         animateSearch( visitedNodesInOrder, shortestPath, newGrid);
         
         return newGrid;
-      }
+      }else if(selectedAlgorithm == "dfs"){
+        const { visitedNodesInOrder, shortestPath } = depthFirstSearch(newGrid, startNode, endNode);
 
+        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
+        
+        return newGrid;
+      }
+      
     });
   };
   const animateSearch = (visitedNodes, shortestPath) => {
     for (let i = 0; i < visitedNodes.length; i++) {
         setTimeout(() => {
+            // Skip updating start and end cells
+            if (visitedNodes[i].row === startCell.row && visitedNodes[i].col === startCell.col) {
+                return; // Skip if it's the start cell
+            }
+            if (visitedNodes[i].row === endCell.row && visitedNodes[i].col === endCell.col) {
+                return; // Skip if it's the end cell
+            }
+
             // Set the current node to orange (checked)
             setGridData((prevGrid) =>
                 prevGrid.map((row) =>
@@ -269,7 +287,6 @@ function App() {
 
 
 
-
   const animateShortestPath = (shortestPath) => {
     for (let i = 0; i < shortestPath.length; i++) {
         setTimeout(() => {
@@ -287,7 +304,7 @@ function App() {
             }
         }, 25 * i); // Slow animation for visibility
     }
-};
+  };
 
 
 
@@ -304,7 +321,7 @@ function App() {
           status: 
             (cell.row === startCell.row && cell.col === startCell.col) ? "start" : 
             (cell.row === endCell.row && cell.col === endCell.col) ? "end" : 
-            "default",
+            "default", // Keep start and end cells intact
         }))
       )
     );
@@ -330,6 +347,7 @@ function App() {
             <option value="dijkstra">Dijkstra</option>
             <option value="A*">A*</option>
             <option value="greedy">Greedy BFS</option>
+            <option value="dfs">DFS</option>
           </select>
 
           <button onClick={runAlgorithm} className="action-button" disabled={isRunning}>
