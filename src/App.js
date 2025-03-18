@@ -4,7 +4,7 @@ import { dijkstra } from "./components/grid";
 import { greedyBestFirstSearch } from "./components/greedy";
 import { aStarSearch } from "./components/A-star";
 import { depthFirstSearch } from "./components/dfs";
-
+import { generateMaze } from "./components/mazeGenerator";
 function App() {
   const rows = 30;
   const cols = 50;
@@ -286,12 +286,31 @@ function App() {
     setSelectedAlgorithm(event.target.value);
   };
 
+
+
+
+  const handleGenerateMaze = () => {
+    setGridData(prevGrid => generateMaze(prevGrid, rows, cols, startCell, endCell));
+  };
+
+
+
+
+
+
   return (
     <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
         <h1>PathFinder</h1>
 
         <div className="controls-container">
+          <button
+          onClick={handleGenerateMaze}
+          className="action-button"
+          disabled={isRunning}
+        >
+          Generate Maze
+        </button>
           <select
             value={selectedAlgorithm}
             onChange={handleAlgorithmChange}
