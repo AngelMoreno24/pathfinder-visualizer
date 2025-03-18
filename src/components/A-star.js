@@ -63,7 +63,8 @@ export const aStarSearch = (grid, startNode, finishNode) => {
         checkNeighbors(grid, currentNode, finishNode, pq, processedNodes);
     }
 
-    return { visitedNodesInOrder, shortestPath: [] }; // No path found
+    const shortestPath = getShortestPath(finishNode);
+    return { visitedNodesInOrder, shortestPath }; // No path found
 };
 
 // **Explore neighbors with A* cost calculations**
