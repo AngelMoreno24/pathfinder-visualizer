@@ -261,26 +261,7 @@ function App() {
   };
 
 
-
-
-  const clearBoard = () => {
-    setGridData((prevGrid) =>
-      prevGrid.map((row) =>
-        row.map((cell) => ({
-          ...cell,
-          distance: Infinity,
-          isVisited: false,
-          previousNode: null,
-          status:
-            cell.row === startCell.row && cell.col === startCell.col
-              ? "start"
-              : cell.row === endCell.row && cell.col === endCell.col
-              ? "end"
-              : "default" // Keep start and end cells intact
-        }))
-      )
-    );
-  };
+ 
 
   const handleAlgorithmChange = (event) => {
     setSelectedAlgorithm(event.target.value);
