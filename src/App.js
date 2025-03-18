@@ -301,7 +301,7 @@ function App() {
   return (
     <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
-        <h1>PathFinder</h1>
+        <h1>PathFinding Visualizer</h1>
 
         <div className="controls-container">
           <button
