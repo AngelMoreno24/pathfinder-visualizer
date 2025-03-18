@@ -103,7 +103,6 @@
 
 .cell.checked {
   background-color: rgb(249, 255, 62);
-  transition: background-color 0.3s ease;
 }
 
 .cell.visited {
@@ -113,6 +112,7 @@
 
 .cell.path {
   background-color: yellow;
+  transition: background-color 0.6s ease;
 }
 
 

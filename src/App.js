@@ -4,6 +4,7 @@ import { dijkstra } from "./components/grid";
 import { greedyBestFirstSearch } from "./components/greedy";
 import { aStarSearch } from "./components/A-star";
 import { depthFirstSearch } from "./components/dfs";
+
 function App() {
   const rows = 30;
   const cols = 50;
@@ -18,16 +19,12 @@ function App() {
 
   const [isRunning, setIsRunning] = useState(false);
 
-
-
   // Function to adjust cell size dynamically
   const updateCellSize = () => {
     const maxWidth = Math.min(window.innerWidth * 0.9, 1200) / cols; // Limit width
     const maxHeight = Math.min(window.innerHeight * 0.8, 800) / rows; // Limit height
     setCellSize(Math.max(15, Math.min(maxWidth, maxHeight))); // Keep size reasonable
   };
-
-
 
   // Initialize grid state once (persistent walls, no reset)
   useEffect(() => {
@@ -38,7 +35,7 @@ function App() {
   }, []);
 
   // Function to create an initial grid (without clearing selected walls)
- const createGrid = () => {
+  const createGrid = () => {
     return Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => ({
         row,
@@ -51,33 +48,40 @@ function App() {
             : "default",
         distance: Infinity,
         isVisited: false,
-        previouseNode: null
+        previousNode: null
       }))
     );
-  }; 
- 
+  };
 
   const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
-        prevGrid.map((row) =>
-            row.map((cell) => ({
-                ...cell,
-                distance: Infinity,
-                isVisited: false,
-                previousNode: null,
-                g: Infinity,
-                f: Infinity,
-                status: cell.status === "selected" ? "selected" :
-                        cell.row === newStart.row && cell.col === newStart.col ? "start" :
-                        cell.row === newEnd.row && cell.col === newEnd.col ? "end" : "default",
-            }))
-        )
+      prevGrid.map((row) =>
+        row.map((cell) => ({
+          ...cell,
+          distance: Infinity,
+          isVisited: false,
+          previousNode: null,
+          g: Infinity,
+          f: Infinity,
+          status:
+            cell.status === "selected"
+              ? "selected"
+              : cell.row === newStart.row && cell.col === newStart.col
+              ? "start"
+              : cell.row === newEnd.row && cell.col === newEnd.col
+              ? "end"
+              : "default"
+        }))
+      )
     );
-};
+  };
+
   // Handle cell selection (walls)
   const toggleCell = (row, col) => {
-    if ((row === startCell.row && col === startCell.col) || 
-        (row === endCell.row && col === endCell.col)) {
+    if (
+      (row === startCell.row && col === startCell.col) ||
+      (row === endCell.row && col === endCell.col)
+    ) {
       return; // Prevent selecting start or end cells as walls
     }
 
@@ -106,92 +110,32 @@ function App() {
 
   const handleMouseEnter = (row, col) => {
     if (draggingType === "start") {
-        setStartCell((prevStart) => {
-            const newStart = { row, col };
-            updateGrid(newStart, endCell);  // Ensure latest endCell
-            return newStart;
-        });
+      setStartCell((prevStart) => {
+        const newStart = { row, col };
+        updateGrid(newStart, endCell); // Ensure latest endCell
+        return newStart;
+      });
     } else if (draggingType === "end") {
-        setEndCell((prevEnd) => {
-            const newEnd = { row, col };
-            updateGrid(startCell, newEnd);  // Ensure latest startCell
-            return newEnd;
-        });
+      setEndCell((prevEnd) => {
+        const newEnd = { row, col };
+        updateGrid(startCell, newEnd); // Ensure latest startCell
+        return newEnd;
+      });
     } else if (isDragging) {
-        toggleCell(row, col);
+      toggleCell(row, col);
     }
-};
+  };
 
   const handleMouseUp = () => {
     setIsDragging(false);
     setDraggingType(null);
   };
 
-
-
-
-
-  const runDijkstra = () => {
-    setGridData((prevGrid) => {
-      const newGrid = prevGrid.map((row) =>
-        row.map((cell) => ({
-          ...cell,
-          distance: Infinity,
-          isVisited: false,
-          previousNode: null,
-          status: cell.status === "selected" ? "selected" :
-                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
-                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
-        }))
-      );
-  
-      const startNode = newGrid[startCell.row][startCell.col];
-      const endNode = newGrid[endCell.row][endCell.col];
-      
-      // Run Dijkstra
-      const { visitedNodesInOrder, shortestPath } = dijkstra(newGrid, startNode, endNode);
-
-      // Animate checked nodes first, then visited nodes
-      animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-      
-      return newGrid;
-    });
-  };
-
-  const runGreedy = () => {
-    setGridData((prevGrid) => {
-      const newGrid = prevGrid.map((row) =>
-        row.map((cell) => ({
-          ...cell,
-          distance: Infinity,
-          isVisited: false,
-          previousNode: null,
-          status: cell.status === "selected" ? "selected" :
-                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
-                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
-        }))
-      );
-  
-      const startNode = newGrid[startCell.row][startCell.col];
-      const endNode = newGrid[endCell.row][endCell.col];
-      
-      // Run Dijkstra
-      const { visitedNodesInOrder, shortestPath } = greedyBestFirstSearch(newGrid, startNode, endNode);
-
-      // Animate checked nodes first, then visited nodes
-      animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-      
-      return newGrid;
-    });
-  };
-
-
   const runAlgorithm = () => {
     if (isRunning) return; // Prevent multiple clicks while running
 
     setIsRunning(true); // Disable buttons
 
-    
     setGridData((prevGrid) => {
       const newGrid = prevGrid.map((row) =>
         row.map((cell) => ({
@@ -199,89 +143,86 @@ function App() {
           distance: Infinity,
           isVisited: false,
           previousNode: null,
-          status: cell.status === "selected" ? "selected" :
-                  cell.row === startCell.row && cell.col === startCell.col ? "start" :
-                  cell.row === endCell.row && cell.col === endCell.col ? "end" : "default",
+          status:
+            cell.status === "selected"
+              ? "selected"
+              : cell.row === startCell.row && cell.col === startCell.col
+              ? "start"
+              : cell.row === endCell.row && cell.col === endCell.col
+              ? "end"
+              : "default"
         }))
       );
-  
+
       const startNode = newGrid[startCell.row][startCell.col];
       const endNode = newGrid[endCell.row][endCell.col];
-      
-      // Run Dijkstra
-      if(selectedAlgorithm == "dijkstra"){
+
+      // Run the selected algorithm
+      if (selectedAlgorithm === "dijkstra") {
         const { visitedNodesInOrder, shortestPath } = dijkstra(newGrid, startNode, endNode);
-
-        // Animate checked nodes first, then visited nodes
-        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-        
-        return newGrid;
-      }else if(selectedAlgorithm == "greedy"){      
+        animateSearch(visitedNodesInOrder, shortestPath, newGrid);
+      } else if (selectedAlgorithm === "greedy") {
         const { visitedNodesInOrder, shortestPath } = greedyBestFirstSearch(newGrid, startNode, endNode);
-
-        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-        
-        return newGrid;
-
-      }else if(selectedAlgorithm == "A*"){
+        animateSearch(visitedNodesInOrder, shortestPath, newGrid);
+      } else if (selectedAlgorithm === "A*") {
         const { visitedNodesInOrder, shortestPath } = aStarSearch(newGrid, startNode, endNode);
-
-        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-        
-        return newGrid;
-      }else if(selectedAlgorithm == "dfs"){
+        animateSearch(visitedNodesInOrder, shortestPath, newGrid);
+      } else if (selectedAlgorithm === "dfs") {
         const { visitedNodesInOrder, shortestPath } = depthFirstSearch(newGrid, startNode, endNode);
-
-        animateSearch( visitedNodesInOrder, shortestPath, newGrid);
-        
-        return newGrid;
+        animateSearch(visitedNodesInOrder, shortestPath, newGrid);
       }
-      
+
+      return newGrid;
     });
   };
+
   const animateSearch = (visitedNodes, shortestPath) => {
     for (let i = 0; i < visitedNodes.length; i++) {
-        setTimeout(() => {
-            // Skip updating start and end cells
-            if (visitedNodes[i].row === startCell.row && visitedNodes[i].col === startCell.col) {
-                return; // Skip if it's the start cell
-            }
-            if (visitedNodes[i].row === endCell.row && visitedNodes[i].col === endCell.col) {
-                return; // Skip if it's the end cell
-            }
+      setTimeout(() => {
+          setGridData((prevGrid) =>
+              prevGrid.map((row) =>
+                  row.map((cell) => {
+                      // Keep the start cell green
+                      if (cell.row === startCell.row && cell.col === startCell.col) {
+                          return { ...cell, status: "start" }; // Keep start cell green
+                      }
 
-            // Set the current node to orange (checked)
-            setGridData((prevGrid) =>
-                prevGrid.map((row) =>
-                    row.map((cell) =>
-                        cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col
-                            ? { ...cell, status: "checked" } // First, mark as checked (orange)
-                            : cell
-                    )
-                )
-            );
+                      // Keep the end cell blue
+                      if (cell.row === endCell.row && cell.col === endCell.col) {
+                          return { ...cell, status: "end" }; // Keep end cell blue
+                      }
 
-            // After a delay, switch it to visited (blue)
-            setTimeout(() => {
-                setGridData((prevGrid) =>
-                    prevGrid.map((row) =>
-                        row.map((cell) =>
-                            cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col
-                                ? { ...cell, status: "visited" } // Change to visited (blue)
-                                : cell
-                        )
-                    )
-                );
+                      // Set visited nodes to orange
+                      if (cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col) {
+                          return { ...cell, status: "checked" }; // Mark as checked (orange)
+                      }
 
-                // If it's the last visited node, animate the shortest path
-                if (i === visitedNodes.length - 1) {
-                    animateShortestPath(shortestPath);
-                }
-            }, 5); // Delay before switching to blue
+                      return cell; // Otherwise, return the cell as is
+                  })
+              )
+          );
 
-        }, 10 * i); // Delay each node animation
+          // After a delay, switch checked nodes to visited (blue)
+          setTimeout(() => {
+              setGridData((prevGrid) =>
+                  prevGrid.map((row) =>
+                      row.map((cell) =>
+                          cell.row === visitedNodes[i].row && cell.col === visitedNodes[i].col
+                              ? { ...cell, status: "visited" } // Change to visited (blue)
+                              : cell
+                      )
+                  )
+              );
+
+              // If it's the last visited node, animate the shortest path
+              if (i === visitedNodes.length - 1) {
+                  animateShortestPath(shortestPath); // Animate shortest path after visiting all nodes
+              }
+          }, 5); // Delay before switching to blue
+
+      }, 10 * i); // Delay each node animation
     }
-};
+  };
 
 
 
@@ -289,23 +230,35 @@ function App() {
 
   const animateShortestPath = (shortestPath) => {
     for (let i = 0; i < shortestPath.length; i++) {
-        setTimeout(() => {
-            setGridData((prevGrid) =>
-                prevGrid.map((row) =>
-                    row.map((cell) =>
-                        cell.row === shortestPath[i].row && cell.col === shortestPath[i].col
-                            ? { ...cell, status: "path"}
-                            : cell
-                    )
-                )
-            );
-            if (i === shortestPath.length - 1) {
-              setIsRunning(false); // 🔹 Re-enable buttons after animation
-            }
-        }, 25 * i); // Slow animation for visibility
+      setTimeout(() => {
+          setGridData((prevGrid) =>
+              prevGrid.map((row) =>
+                  row.map((cell) => {
+                      // Skip the start cell from being overwritten and keep it green
+                      if (cell.row === startCell.row && cell.col === startCell.col) {
+                          return { ...cell, status: "start" }; // Keep start cell green
+                      }
+
+                      // Skip the end cell from being overwritten and keep it blue (or your custom color)
+                      if (cell.row === endCell.row && cell.col === endCell.col) {
+                          return { ...cell, status: "end" }; // Keep end cell blue
+                      }
+
+                      // Mark path cells (the cells in the shortest path)
+                      if (cell.row === shortestPath[i].row && cell.col === shortestPath[i].col) {
+                          return { ...cell, status: "path" }; // Mark as path cell
+                      }
+
+                      return cell; // Otherwise, return the cell as is
+                  })
+              )
+          );
+          if (i === shortestPath.length - 1) {
+              setIsRunning(false); // Re-enable buttons after animation finishes
+          }
+      }, 10 * i); // Slow animation for visibility
     }
   };
-
 
 
 
@@ -318,10 +271,12 @@ function App() {
           distance: Infinity,
           isVisited: false,
           previousNode: null,
-          status: 
-            (cell.row === startCell.row && cell.col === startCell.col) ? "start" : 
-            (cell.row === endCell.row && cell.col === endCell.col) ? "end" : 
-            "default", // Keep start and end cells intact
+          status:
+            cell.row === startCell.row && cell.col === startCell.col
+              ? "start"
+              : cell.row === endCell.row && cell.col === endCell.col
+              ? "end"
+              : "default" // Keep start and end cells intact
         }))
       )
     );
@@ -331,19 +286,18 @@ function App() {
     setSelectedAlgorithm(event.target.value);
   };
 
-
-  const startPathfinding = () => {
-    console.log(selectedAlgorithm)
-    runAlgorithm();
-  };
-
   return (
     <div className="App" onMouseUp={handleMouseUp}>
       <header className="App-header">
         <h1>PathFinder</h1>
-        
+
         <div className="controls-container">
-          <select value={selectedAlgorithm} onChange={handleAlgorithmChange} className="dropdown" disabled={isRunning}>
+          <select
+            value={selectedAlgorithm}
+            onChange={handleAlgorithmChange}
+            className="dropdown"
+            disabled={isRunning}
+          >
             <option value="dijkstra">Dijkstra</option>
             <option value="A*">A*</option>
             <option value="greedy">Greedy BFS</option>
@@ -353,7 +307,13 @@ function App() {
           <button onClick={runAlgorithm} className="action-button" disabled={isRunning}>
             {isRunning ? "Running..." : "Run"}
           </button>
-          <button onClick={() => setGridData(createGrid())} className="action-button clear" disabled={isRunning}>Clear Board</button>
+          <button
+            onClick={() => setGridData(createGrid())}
+            className="action-button clear"
+            disabled={isRunning}
+          >
+            Clear Board
+          </button>
         </div>
       </header>
 
@@ -365,7 +325,7 @@ function App() {
             gridTemplateRows: `repeat(${rows}, minmax(15px, ${cellSize}px))`,
             maxWidth: "90vw",
             maxHeight: "80vh",
-            overflow: "auto",
+            overflow: "auto"
           }}
         >
           {gridData.map((row) =>
@@ -382,8 +342,7 @@ function App() {
         </div>
       </main>
 
-      <footer className="App-header2"> 
-      </footer>
+      <footer className="App-header2"></footer>
     </div>
   );
 }
