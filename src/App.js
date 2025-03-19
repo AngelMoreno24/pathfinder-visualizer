@@ -26,13 +26,6 @@ function App() {
     setCellSize(Math.max(15, Math.min(maxWidth, maxHeight))); // Keep size reasonable
   };
 
-  // Initialize grid state once (persistent walls, no reset)
-  useEffect(() => {
-    updateCellSize();
-    setGridData(createGrid());
-    window.addEventListener("resize", updateCellSize);
-    return () => window.removeEventListener("resize", updateCellSize);
-  }, []);
 
   // Function to create an initial grid (without clearing selected walls)
   const createGrid = () => {
@@ -53,6 +46,15 @@ function App() {
     );
   };
 
+  // Initialize grid state once (persistent walls, no reset)
+  useEffect(() => {
+    updateCellSize();
+    setGridData(createGrid());
+    window.addEventListener("resize", updateCellSize);
+    return () => window.removeEventListener("resize", updateCellSize);
+  }, []);
+
+  
   const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
       prevGrid.map((row) =>
