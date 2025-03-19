@@ -52,9 +52,9 @@ function App() {
     setGridData(createGrid());
     window.addEventListener("resize", updateCellSize);
     return () => window.removeEventListener("resize", updateCellSize);
-  }, []);
+  }, [],[createGrid]);
 
-  
+
   const updateGrid = (newStart, newEnd) => {
     setGridData((prevGrid) =>
       prevGrid.map((row) =>
