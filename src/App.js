@@ -5,6 +5,7 @@ import { greedyBestFirstSearch } from "./components/greedy";
 import { aStarSearch } from "./components/A-star";
 import { depthFirstSearch } from "./components/dfs";
 import { generateMaze } from "./components/mazeGenerator";
+import { useCallback } from "react";
 function App() {
   const rows = 30;
   const cols = 50;
@@ -27,8 +28,8 @@ function App() {
   };
 
 
-  // Function to create an initial grid (without clearing selected walls)
-  const createGrid = () => {
+
+  const createGrid = useCallback(() => {
     return Array.from({ length: rows }, (_, row) =>
       Array.from({ length: cols }, (_, col) => ({
         row,
@@ -41,18 +42,17 @@ function App() {
             : "default",
         distance: Infinity,
         isVisited: false,
-        previousNode: null
+        previousNode: null,
       }))
     );
-  };
-
-  // Initialize grid state once (persistent walls, no reset)
+  }, [rows, cols, startCell, endCell]); // Dependencies
+  
   useEffect(() => {
     updateCellSize();
     setGridData(createGrid());
     window.addEventListener("resize", updateCellSize);
     return () => window.removeEventListener("resize", updateCellSize);
-  }, [],[createGrid]);
+  }, [createGrid]); // Correct dependency array
 
 
   const updateGrid = (newStart, newEnd) => {
